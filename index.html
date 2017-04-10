@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HIT THE BALL</title>
+  <!--On load Phaser-->
+  <script src="lib/phaser.min.js"></script>
+  <!--On charge tout les state sous forme de fichiers séparés -->
+  <script src="js/boot.js"></script>
+  <script src="js/preload.js"></script>
+  <script src="js/gametitle.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/gameover.js"></script>
+  <!-- J'enlève les marges de bases de html -->
+	<style>body{margin:0}</style>
+
+  <!-- On initialise le jeu et ses états -->
+	<script>
+		(function() {
+      //On créer notre super objet game qui contient tout le jeu
+			var game = new Phaser.Game(960, 560, Phaser.AUTO);
+      //On ajoute chaque fichiers js en tant que states de l'objet game
+			game.state.add("Boot",boot);
+			game.state.add("Preload",preload);
+			game.state.add("GameTitle",gametitle);
+			game.state.add("Match",match);
+			game.state.add("GameOver",gameover);
+      // Finalement on lance le jeu
+			game.state.start("Boot");
+		})();
+	</script>
+
+</head>
+<body>
+
+</body>
+</html>
