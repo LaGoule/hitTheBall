@@ -1,81 +1,62 @@
 var match = function(game){
 	//Variables générales
 	p = []; //Objet qui contient les deux joueurs
-	playerNb = 2; //Constante
 	workingButtons = true; //Pour la pause etc...
   matchRound = undefined; //Contient le numero du round
   matchEnd = false; //
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
-	//matchScore = [0,0]; //Score des deux joueurs
 
+	BASESPEED = 4;
+	BASESLOWFACTOR = 8;
 	POINTSPERMATCH = 3;
+	PLAYERNB = 2;
+	GMARGIN = 10;
 }
 
 //On créer l'état qui gère le match 1v1
 match.prototype = {
   preload: function() {
 		//Variables de positionnement
-		gwx = this.game.world.centerX;
-		gwy = this.game.world.centerY;
-		gww = this.game.world.width;
-		gwh = this.game.world.height;
+		gwx = this.game.world.centerX; gwy = this.game.world.centerY;
+		gww = this.game.world.width; gwh = this.game.world.height;
   },
 
   create: function() {
 
-		//On créée les deux boutons de lancer
-		for(i=0;i<playerNb;i++){
-			/*
-			let btnX = getPCenter(i);
-			rollBtn[i] = this.game.add.button(btnX,gwy,"play",rollCoins,this);
-			//On change l'anchor des boutons
-			rollBtn[i].anchor.setTo(0.5);
-			rollBtn[i].pnb = i;
-			*/
-		}
-
-    //Constructor de l'objet Player
-    Player = function(id, game) {
-			this.id = undefined;
-			this.level = 1;
-			this.exp = 0;
-      this.score = 0;
-
-			this.game = game;
-
-			this.btnPass = 0;
-    }
-
-    //Constructor de l'objet Ball
-    Ball = function(game) {
-			this.baseSpd = 3;
+		//Classe de l'objet Ball
+		Ball = function(game) {
+			this.baseSpd = BASESPEED;
 			this.currSpd = this.baseSpd;
-			this.dir = Math.round(Math.random(0,1));
-				if(!this.dir){this.dir = -1;}
+			this.dir = undefined;
 			this.type = undefined;
 			this.combo = 0;
 			this.lastHit = undefined; //P1 ou P2
 			this.playing = false;
 
+			this.slowSpd = undefined;
+			this.slowFactor = BASESLOWFACTOR;
+			this.slowOn = false;
+
 			this.x = gwx;
 			this.y = gwy;
 			this.xToGoal = undefined;
-
 			this.game = game;
 
 			this.spr = game.add.sprite(this.x,this.y,"ball");
-	    	this.spr.inputEnabled = true;
-	    	this.spr.events.onInputDown.add(this.freezeBall, this);
-	    	this.spr.events.onInputUp.add(this.hitTheBall, this);
-				this.spr.scale.setTo(0.3);
-				this.spr.anchor.setTo(0.5,0.5);
-    }
+				this.spr.inputEnabled = true;
+				this.spr.events.onInputDown.add(this.slowTheBall, this);
+				this.spr.events.onInputUp.add(this.hitTheBall, this);
+				this.spr.scale.setTo(0.5);
+				this.spr.anchor.setTo(0.5);
+		}
 
 		//Update de la balle
 		Ball.prototype.update = function() {
 			//Formule de vitesse de la balle
-			if(this.playing){
+			if(this.playing && !this.slowOn){
 				this.x += this.currSpd * this.dir;
+			}else if(this.playing && this.slowOn){
+				this.x += (this.currSpd / this.slowFactor) * this.dir;
 			}
 
 			//On deplace toujours le sprite sur l'objet
@@ -90,7 +71,7 @@ match.prototype = {
 			}
 
 			//Goal si la balle sort du terrain
-			if(this.x>gww+this.spr.width/2 || this.x<0-this.spr.width/2){
+			if(this.x>gww+this.spr.width/2+GMARGIN || this.x<0-this.spr.width/2-GMARGIN){
 				endRound(this.game, this.lastHit);
 			}
 		}
@@ -104,12 +85,13 @@ match.prototype = {
 			this.playing = true;
 		}
 
-    //Fonction freezeBall
-		Ball.prototype.freezeBall = function() {
-			this.playing = false;
+		//Fonction slowTheBall
+		Ball.prototype.slowTheBall = function() {
+			//this.playing = false;
+			this.slowOn = true;
 		}
 
-    //Fonction hitTheBall
+		//Fonction hitTheBall
 		Ball.prototype.hitTheBall = function(type, player) {
 			if(workingButtons){
 				let pnb = player;
@@ -119,8 +101,9 @@ match.prototype = {
 
 				//On modifie vitesse et direction
 				this.dir *= (-1);
-				this.currSpd *= 1.1 * ((this.combo/10)+1) ;
+				this.currSpd *= ((this.combo/10)+1);
 				this.playing = true;
+				this.slowOn = false;
 
 				//Qui a touché la balle en dernier
 				if(this.x<gwx){ //P1
@@ -145,6 +128,46 @@ match.prototype = {
 			this.y = gwy;
 		}
 
+    //Classe de l'objet Player
+    Player = function(id, game) {
+			this.level = 1;
+			this.exp = 0;
+      this.score = 0;
+
+			this.id = id;
+			this.game = game;
+
+			/*
+			this.btn = game.add.graphics(0, 0);
+				this.btn.alpha = 0.3;
+				this.btn.anchor = 1;
+				this.btn.beginFill(0x00FF33, 0.8);
+				this.btn.lineStyle(0);
+				this.btn.drawRect(GMARGIN,GMARGIN,gwx-GMARGIN*2,gwh-GMARGIN*2);
+		    this.btn.inputEnabled = true;
+	    	this.btn.events.onInputDown.add(theBall.slowTheBall, this);
+	    	this.btn.events.onInputUp.add(theBall.hitTheBall, this);
+			*/
+    }
+
+		//Update de la balle
+		Player.prototype.update = function() {
+		}
+
+		//Fonction pressShoot
+		Player.prototype.pressShoot = function() {
+			if(workingButtons){
+				this.btn.alpha = 1;
+			}
+		}
+
+		//Fonction releaseShoot
+		Player.prototype.releaseShoot = function() {
+			if(workingButtons){
+				this.btn.alpha = 0.3;
+			}
+		}
+
 		//Fonction qui dessine le plateau de jeu
 		drawBoard(this);
 
@@ -155,8 +178,9 @@ match.prototype = {
 		function initMatch(game){
 	    p[0] = new Player(0, game);
 	    p[1] = new Player(1, game);
-	    theBall = new Ball(game);
 	    matchRound = 1;
+			theBall = new Ball(game);
+			//On lance la balle
 			theBall.goBall();
 			//On affiche un message de début de partie
 			console.log('---> Bonne partie! | Round: ',matchRound);
@@ -192,6 +216,7 @@ match.prototype = {
 					theBall.reset();
 
 					matchEnd = true;
+					workingButtons = false;
 				}
 			}
 
@@ -238,11 +263,11 @@ match.prototype = {
 	    var bg = self.game.add.sprite(0,0,'bg');
 
 			var pZones = self.game.add.graphics(0, 0);
-				pZones.beginFill(0x00CCFF, 0.3);
+				pZones.beginFill(0xFF00CC, 0.1);
 				pZones.lineStyle(0);
 				pZones.drawRect(0,0,gwx,gwh);
 
-				pZones.beginFill(0xFFCC00, 0.3);
+				pZones.beginFill(0x00EEFF, 0.1);
 				pZones.lineStyle(0);
 				pZones.drawRect(gwx,0,gww,gwh);
 
@@ -255,5 +280,19 @@ match.prototype = {
 		//Update de la balle
 		theBall.update();
 
+		//Pseudo HUD
+		this.game.debug.text("Score de J1: " + p[0].score, 32,32);
+		this.game.debug.text("Score de J2: " + p[1].score, gww-170,32);
+		this.game.debug.text("COMBO: " + theBall.combo, gwx-40,32);
+
+		//Fin du match
+		if(matchEnd){
+			if(bestPlayer){
+				var winX = gww-170;
+			}else{
+				var winX = 32;
+			}
+			this.game.debug.text("GAGNANT: J" + (bestPlayer+1) + '!',winX,gwy);
+		}
 	}
 };
