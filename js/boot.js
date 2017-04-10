@@ -8,6 +8,7 @@ boot.prototype = {
     this.game.load.image("loading","res/loading.png");
 		//Image de la ball
     this.game.load.image("ball","res/ball.png");
+    this.game.load.image("redball","res/redball.png");
 	},
 	create: function(){
 		//Standard settings (Scale, Screen size set, etc..)
