@@ -47,13 +47,13 @@ match.prototype = {
 
 			this.sprGlow = game.add.sprite(this.x,this.y,"redball");
 				this.sprGlow.alpha = 0.3;
+				this.sprGlow.inputEnabled = true;
+				this.sprGlow.events.onInputDown.add(this.slowTheBall, this);
+				this.sprGlow.events.onInputUp.add(this.hitTheBall, this);
 				this.sprGlow.scale.setTo(0.4);
 				this.sprGlow.anchor.setTo(0.5);
 
 			this.spr = game.add.sprite(this.x,this.y,"ball");
-				this.spr.inputEnabled = true;
-				this.spr.events.onInputDown.add(this.slowTheBall, this);
-				this.spr.events.onInputUp.add(this.hitTheBall, this);
 				this.spr.scale.setTo(0.5);
 				this.spr.anchor.setTo(0.5);
 			//On active la physique sur les sprites de Ball
@@ -65,12 +65,16 @@ match.prototype = {
 			if(workingButtons){
 				//Formule de vitesse de la balle
 				if(this.playing && !this.slowOn){
-					this.x += this.currSpd * this.dir;
+					this.x += (-Math.abs(this.ySpd)) + this.currSpd * this.dir;
+					this.y += this.ySpd * (1+(this.combo/10));
 				}else if(this.playing && this.slowOn){
-					this.x += (this.currSpd / this.slowFactor) * this.dir;
+					this.x += (-Math.abs(this.ySpd)) + (this.currSpd / this.slowFactor) * this.dir;
+					//this.y += (this.ySpd * 1+(this.combo/10)/ this.slowFactor);
 				}
-				this.y += this.ySpd;
-				this.ySpd -= this.ySpd/40;
+				//Desceleration Y
+				if(this.ySpd){
+					this.ySpd -= this.ySpd/40;
+				}
 
 				//On deplace toujours le sprite sur l'objet
 				this.spr.x = this.x;
@@ -79,11 +83,13 @@ match.prototype = {
 				this.sprGlow.y = this.y;
 
 				//On modifie xToGoal
+				/*
 				if(this.dir===1){
 					this.xToGoal = Math.floor(gww + (this.x-gww));
 				}else{
 					this.xToGoal = Math.floor(0 + this.x);
 				}
+				*/
 
 				//Goal si la balle sort du terrain
 				if(this.x>gww+this.spr.width/2+GMARGIN*5 || this.x<0-this.spr.width/2-GMARGIN*5){
@@ -113,7 +119,6 @@ match.prototype = {
 				//On calcule le lancer sur Y
 				this.cursorY = this.game.input.y;
 				this.ySpd = 0;
-				console.log(this.cursorY);
 			}
 		}
 
@@ -124,6 +129,7 @@ match.prototype = {
 
 				//On incrémente le combo de passes
 				this.combo++;
+				txCombo.setText(theBall.combo);
 
 				//On modifie vitesse et direction
 				//Formule à modifier pour empecher de se passer la balle à soit même
@@ -192,6 +198,7 @@ match.prototype = {
 		drawBoard(this);
 
 		//Initialize la partie (créer p0 et p1 + theBall)
+		resetMatch();
 		initMatch(this);
 
     //Fonction d'initialisation de la partie
@@ -266,6 +273,7 @@ match.prototype = {
 					var winX = 32;
 				}
 				self.game.debug.text("GAGNANT: J" + (bestPlayer+1) + '!',winX,gwy);
+				self.game.time.events.add(Phaser.Timer.SECOND * 4, goTitle, this);
 			}
 		};
 
@@ -294,7 +302,19 @@ match.prototype = {
 			}
 			//On retourne l'id du joueur.
 			return best;
-		};
+		}
+
+		function goTitle(){
+			game.state.start('GameTitle');
+		}
+
+		function resetMatch(){
+			p = []; //Objet qui contient les deux joueurs
+			workingButtons = true; //Pour la pause etc...
+		  matchRound = undefined; //Contient le numero du round
+		  matchEnd = false; //
+			bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
+		}
 
 		function drawBoard(parent){
 
@@ -302,7 +322,7 @@ match.prototype = {
 	    let stroke = 10;
 
 			//Styles
-	    stSimple = { font: "60px Arial", fill: "#ffdd66", align: "center" };
+	    stSimple = { font: "90px Times", fill: "#ffdd66", align: "center" };
 
 			var board = self.game.add.group()
 
@@ -319,6 +339,10 @@ match.prototype = {
 				pZones.drawRect(gwx,0,gww,gwh);
 
 			window.graphics += pZones;
+
+			txCombo = game.add.text(gwx,50,'0',stSimple);
+			txCombo.anchor.setTo(0.5);
+			txCombo.alpha = 0;
 		}
   },
 

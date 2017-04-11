@@ -17,7 +17,7 @@
 	<script>
 		(function() {
       //On créer notre super objet game qui contient tout le jeu
-			var game = new Phaser.Game(960, 560, Phaser.AUTO);
+			game = new Phaser.Game(960, 560, Phaser.AUTO);
       //On ajoute chaque fichiers js en tant que states de l'objet game
 			game.state.add("Boot",boot);
 			game.state.add("Preload",preload);
