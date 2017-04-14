@@ -10,7 +10,7 @@ var match = function(game){
 	BASESPEED = 4;
 	BASESLOWFACTOR = 16;
 	BOUNCEEFFECT = 0.98;
-	BASEPOWER = 8;
+	BASEPOWER = 4;
 	MAXPOWER = -4;
 	YRECTIF = 40;
 
@@ -30,7 +30,7 @@ match.prototype = {
 
   create: function() {
 		//On déclanche le moter physique ARCADE
-		this.game.physics.startSystem(Phaser.Physics.ARCADE);
+		//this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		//Fonction qui dessine le plateau de jeu
 		drawBoard(this);

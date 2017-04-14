@@ -7,7 +7,8 @@ boot.prototype = {
 		//Image de la barre de chargement
     this.game.load.image("loading","res/loading.png");
 		//Image de la ball
-    this.game.load.image("ball","res/ball.png");
+    this.game.load.spritesheet("ball","res/ballsheet.png",250,250);
+    //this.game.load.image("ball","res/ball.png");
     this.game.load.image("redball","res/redball.png");
 	},
 	create: function(){
