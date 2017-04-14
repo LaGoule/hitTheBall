@@ -7,10 +7,16 @@ var match = function(game){
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
 
-	BASESPEED = 4;//3
-	BASESLOWFACTOR = 8;
+	BASESPEED = 4;
+	BASESLOWFACTOR = 16;
+	BOUNCEEFFECT = 0.98;
+	BASEPOWER = 8;
+	MAXPOWER = -4;
+	YRECTIF = 40;
+
 	POINTSPERMATCH = 3;
 	PLAYERNB = 2;
+
 	GMARGIN = 10;
 }
 
@@ -39,7 +45,8 @@ match.prototype = {
 		theBall.update();
 
 		//Pseudo HUD
-		this.game.debug.text("COMBO: " + theBall.combo, gwx-40,32);
-		this.game.debug.text("Best COMBO: " + bestCombo, gwx-58,52);
+		//this.game.debug.text("FPS: " + game.time.fps, 40,32);
+		//this.game.debug.text("COMBO: " + theBall.combo, gwx-40,32);
+		//this.game.debug.text("Best COMBO: " + bestCombo, gwx-58,52);
 	}
 };

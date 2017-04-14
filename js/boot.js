@@ -14,6 +14,9 @@ boot.prototype = {
 		//Standard settings (Scale, Screen size set, etc..)
 		this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 		this.scale.pageAlignHorizontally = true;
+
+		//A activer pour connaitre les fps
+		this.game.time.advancedTiming = true;
 		//Futur fonction de setScreenSize
 		//this.scale.setScreenSize();
 		this.game.state.start("Preload");

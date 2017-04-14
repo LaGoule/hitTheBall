@@ -6,7 +6,7 @@ function initMatch(game){
   theBall = new Ball(game);
   theBall.reset();
   //On lance la balle
-  theBall.goBall();
+  self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
   //On affiche un message de début de partie
   console.log('---> Bonne partie! | Round: ',matchRound);
   console.log('Direction de la balle:  ',theBall.dir);
@@ -14,8 +14,9 @@ function initMatch(game){
 
 //Fonction de création des deux joueurs
 function endRound(game, winn){
+
   workingButtons = false;
-  let self = game;
+  var self = game;
   let winner = winn;
 
   //Si personne n'a toucher la balle
@@ -60,8 +61,6 @@ function endRound(game, winn){
 
   //4. On lance un nouveau round ou on arrête le match
   if(!matchEnd){
-    //On arrête la ball
-    theBall.reset();
     self.game.time.events.add(Phaser.Timer.SECOND * 2, newRound, this);
   }else{
     if(bestPlayer){
@@ -76,14 +75,13 @@ function endRound(game, winn){
 
 //Fonction qui enclenche le prochain round
 function newRound(){
-  workingButtons = true;
   //On retire le marqueur de goal
   goalZone.alpha = 0;
   //On arrête la ball
   theBall.reset();
   //On lance la balle
-  //game.time.events.add(Phaser.Timer.SECOND * 3, theBall.goBall, this);
-  theBall.goBall();
+  self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
+  //theBall.goBall();
 };
 
 //Fonction qui retourne le joueur en tête
@@ -122,7 +120,7 @@ function drawBoard(parent){
   let stroke = 10;
 
   //Styles
-  stSimple = { font: "90px Times", fill: "#ffdd66", align: "center" };
+  var stSimple = { font: "90px Times", fill: "#ffdd66", align: "center" };
 
   var board = self.game.add.group()
 
