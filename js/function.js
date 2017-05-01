@@ -9,7 +9,6 @@ function initMatch(game){
   self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
   //On affiche un message de début de partie
   console.log('---> Bonne partie! | Round: ',matchRound);
-  console.log('Direction de la balle:  ',theBall.dir);
 };
 
 //Fonction de création des deux joueurs
@@ -30,7 +29,8 @@ function endRound(game, winn){
 
   goalZone = self.game.add.graphics(0, 0);
   //goalZone.lineStyle(0);
-  if(winner){
+  console.log(winner);
+  if(winner===0){
     goalZone.beginFill(0xFF00CC, 0.3);
     goalZone.drawRect(0,0,gwx,gwh);
   }else{

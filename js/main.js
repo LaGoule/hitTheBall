@@ -8,16 +8,21 @@ var match = function(game){
   bestCombo = 0;
 
 	BASESPEED = 4;
-	BASESLOWFACTOR = 16;
-	BOUNCEEFFECT = 0.98;
-	BASEPOWER = 4;
-	MAXPOWER = -4;
+	BASESLOWFACTOR = 60;
+	BOUNCEEFFECT = 1.08;
+	HOLDLOOPMS = 140;
+	HOLDPOWERADD = 0.2;
+	BASEPOWER = 0.8;
+	MAXPOWER = 1.9;
 	YRECTIF = 40;
 
 	POINTSPERMATCH = 3;
 	PLAYERNB = 2;
 
+	//Graphics
 	GMARGIN = 10;
+	BALLGLOWMAX = 0.52;
+	BALLGLOWMIN = 0.34;
 }
 
 //On créer l'état qui gère le match 1v1
