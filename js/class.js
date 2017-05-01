@@ -25,25 +25,49 @@ Ball = function(game) {
   this.holdTimer = game.time.create(false);
 
   //Variables graphiques et inputs
-  this.gSpr = game.add.group();
+  this.gBall = game.add.group();
     this.spr = game.add.sprite(this.x,this.y,"ball");
       this.spr.frame = 0;
       this.spr.scale.setTo(0.5);
       this.spr.anchor.setTo(0.5);
-    this.sprGlow = game.add.sprite(this.x,this.y,"redball");
+    this.sprGlow = game.add.sprite(this.x,this.y,"greenball");
       this.sprGlow.alpha = 0.2;
       this.sprGlow.inputEnabled = true;
       this.sprGlow.events.onInputDown.add(this.slowTheBall, this);
       this.sprGlow.events.onInputUp.add(this.hitTheBall, this);
       this.sprGlow.scale.setTo(BALLGLOWMAX);
       this.sprGlow.anchor.setTo(0.5);
-  this.gSpr.add(this.sprGlow);
-  this.gSpr.add(this.spr);
+    this.sprClic = game.add.sprite(this.x,this.y,"redball");
+      this.sprClic.frame = 0;
+      this.sprClic.scale.setTo(0.16);
+      this.sprClic.anchor.setTo(0.5);
+      this.sprClic.alpha = 0;
+
+  /*
+  this.fxLine = game.add.bitmapData(600,300);
+    var color = '#dc143c';
+
+    this.fxLine.ctx.beginPath();
+    this.fxLine.ctx.lineWidth = "4";
+    this.fxLine.ctx.strokeStyle = color;
+    this.fxLine.ctx.stroke();
+  this.sprLine = game.add.sprite(0, 0, this.fxLine);
+  */
+
+  this.gBall.add(this.sprGlow);
+  this.gBall.add(this.spr);
 
   //Variables sonores
-  this.sfx = game.add.audio('snd_hitball');
-    this.sfx.allowMultiple = true;
-    this.sfx.addMarker('release_ball', 0.1, 4, 0.5, 0);
+  this.sHit = game.add.audio('snd_hitball');
+    this.sHit.allowMultiple = true;
+    this.sHit.addMarker('sndHit', 0.2, 1.2, 0.12, 0);
+    this.sHit.addMarker('sndWall', 0.5, 0.8, 0.18, 0);
+  this.sHold = game.add.audio('snd_holdball');
+    this.sHold.allowMultiple = false;
+    this.sHold.addMarker('sndHold', 0.1, 2.2, 0.16, 0);
+  this.sGoal = game.add.audio('snd_goal');
+    this.sGoal.allowMultiple = false;
+    this.sGoal.addMarker('sndGoal', 0.3, 6, 1.2, 0);
 }
 
 //Update de la balle
@@ -59,8 +83,8 @@ Ball.prototype.update = function() {
     this.changeSide();
   }
   //On deplace toujours les sprites sur l'objet
-  this.gSpr.x = this.x;
-  this.gSpr.y = this.y;
+  this.gBall.x = this.x;
+  this.gBall.y = this.y;
 }
 
 //Gestion de tous les deplacements de la balle
@@ -71,7 +95,24 @@ Ball.prototype.move = function() {
     this.y += this.ySpd;
   }else if(this.playing && this.slowOn){
     this.x += (this.currSpd / this.slowFactor) * this.dir;
-    //this.y += this.ySpd;
+    //On affiche le pointeur rouge
+    this.sprClic.x =  this.game.input.x;
+    this.sprClic.y =  this.game.input.y;
+    this.sprClic.alpha = 0.5;
+
+    //On update la ligne de visée$
+    /*
+    this.fxLine.clear();
+      this.fxLine.ctx.beginPath();
+      this.fxLine.ctx.beginPath();
+      this.fxLine.ctx.moveTo(this.gBall.x, this.gBall.y);
+      this.fxLine.ctx.lineTo(game.input.x , game.input.y);
+      this.fxLine.ctx.lineWidth = 4;
+      this.fxLine.ctx.stroke();
+      this.fxLine.ctx.closePath();
+      this.fxLine.render();
+    }
+    */
   }
 
   //Desceleration Y
@@ -94,7 +135,7 @@ Ball.prototype.goals = function() {
     }
 
     //On lance un son bruitages
-    this.sfx.play('release_ball');
+    this.sGoal.play('sndGoal');
 
     endRound(this.game, winner);
   }
@@ -104,6 +145,9 @@ Ball.prototype.rebound = function() {
   //Fait rebondir la balle sur les bords haut et bas
   if(this.y<=0+(this.spr.height/2)-this.ySpd || this.y>=gwh-(this.spr.height/2)-this.ySpd){
     this.ySpd *= (-BOUNCEEFFECT);
+
+    //On lance un son bruitages
+    this.sHit.play('sndWall');
     //log
     console.log('Player ', this.lastHit+1, ' WALLBOUNCE!');
   }
@@ -118,10 +162,13 @@ Ball.prototype.changeSide = function() {
 
 //Fonction slowTheBall
 Ball.prototype.slowTheBall = function() {
-  if(workingButtons){
+  if(workingButtons && !this.slowOn){
     if(this.x<=gwx && this.color===1 || this.x>gwx && this.color===2){
       this.slowOn = true;
-      this.power = BASEPOWER;
+      this.power = BASEPOWER
+
+      //On lance un son bruitages
+      this.sHold.play('sndHold');
 
       //Timer pour connaitre la vitesse du coup
       this.holdTimer.loop(HOLDLOOPMS, this.addPower, this);
@@ -148,6 +195,11 @@ Ball.prototype.hitTheBall = function(type, player) {
 
       this.holdTimer.destroy();
 
+      this.sprClic.alpha = 0;
+
+      //On lance un son bruitages
+      this.sHit.play('sndHit');
+
       //On incrémente le combo de passes
       this.combo++;
       //On modifie le meilleur combo si nécessaire
@@ -161,7 +213,6 @@ Ball.prototype.hitTheBall = function(type, player) {
       */
 
       //On modifie vitesse et direction
-      //Formule à modifier pour empecher de se passer la balle à soit même
       //A changer --> faire fonction de tirs général (amortis, smash, slices)
       //Deplacer la balle en fonction de l'angles du pointeurs
       if(this.cursorX<this.game.input.x){
@@ -183,18 +234,22 @@ Ball.prototype.hitTheBall = function(type, player) {
       }
 
       //Teste pour le deplacement Y MOOOOOOOCHE
+      //A inclure dans la futur fonction du haut
       if(this.cursorY<this.game.input.y-40){
 
-        this.yGutter = Math.abs(this.game.input.y - this.cursorY)/50;
+        this.yGutter = Math.abs(this.game.input.y - this.cursorY)/20;
         this.ySpd = this.yGutter * (-1);
       }else if(this.cursorY>this.game.input.y+40){
 
-        this.yGutter = Math.abs(this.cursorY - this.game.input.y)/50;
+        this.yGutter = Math.abs(this.cursorY - this.game.input.y)/20;
         this.ySpd = this.yGutter * 1;
       }
 
       //On change la couleur de la balle
       this.changeColor();
+
+      //On modifie les bruitages en fonction
+      this.sHold.pause();
 
       this.currSpd += (this.power) + (this.combo/30);
       if(this.power>=1.5){console.log('Puissance du hold: ',this.power);}
@@ -237,10 +292,27 @@ Ball.prototype.changeColor = function() {
   //On change le sprite en fonction
   this.spr.frame = this.color;
 }
+/*
+Ball.prototype.drawLine = function(){
+  bmd.clear();
+  bmd.ctx.beginPath();
+  bmd.ctx.beginPath();
+  bmd.ctx.moveTo(10, 10);
+  bmd.ctx.lineTo(game.input.x , game.input.y);
+  bmd.ctx.lineWidth = 4;
+  bmd.ctx.stroke();
+  bmd.ctx.closePath();
+  bmd.render();
+  bmd.refreshBuffer();
+};
+*/
 
 //Lancement de la balle
 Ball.prototype.goBall = function() {
   workingButtons = true;
+
+  //On lance un son bruitages
+  this.sHit.play('sndHit');
 
   this.currSpd = this.baseSpd;
   this.dir = Math.round(Math.random(0,1));
@@ -280,6 +352,8 @@ Ball.prototype.reset = function() {
   this.sprGlow.alpha = 0.2;
 
   this.game.add.tween(this.spr).to( { alpha: 1 }, 600, Phaser.Easing.Linear.None, true);
+
+  this.sGoal.pause();
 }
 
 //Classe de l'objet Player
@@ -290,6 +364,8 @@ Player = function(id, game) {
 
   this.id = id;
   this.game = game;
+
+  //Variables graphiques et inputs
 }
 
 //Update de la balle

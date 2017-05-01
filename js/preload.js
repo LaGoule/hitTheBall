@@ -15,11 +15,16 @@ preload.prototype = {
 		//Assets du jeu
 		//Image de la balle
     this.game.load.spritesheet("ball","res/ballsheet.png",250,250);
-    //this.game.load.image("ball","res/ball.png");
     this.game.load.image("redball","res/redball.png");
+    this.game.load.image("greenball","res/greenball.png");
 
 		//Son et bruitages
-		this.game.load.audio("snd_hitball", 'snd/release_ball.mp3');
+		this.game.load.audio("mus_children", 'snd/children.wav');
+
+		this.game.load.audio("snd_hitball", 'snd/hitball.wav');
+		this.game.load.audio("snd_holdball", 'snd/charge2.wav');
+		this.game.load.audio("snd_goal", 'snd/goal.wav');
+		this.game.load.audio("snd_wallbounce", 'snd/wallhit.wav');
 
 		console.log("2. All assets are preloaded.");
 	},

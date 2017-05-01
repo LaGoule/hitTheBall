@@ -7,6 +7,9 @@ function initMatch(game){
   theBall.reset();
   //On lance la balle
   self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
+  //On lance la musique
+  music.pause();
+  music.play('normal');
   //On affiche un message de début de partie
   console.log('---> Bonne partie! | Round: ',matchRound);
 };
@@ -99,8 +102,21 @@ function whoIsAhead(game){
   return best;
 }
 
+//Petite fonction qui renvoie le côté ou X se trouve
+function whichSide(x){
+  let side = 0;
+  let posX = x;
+  if(posX>=gmx){
+    side = 1;
+  }
+  return side;
+}
+
 //Fonction qui change l'état vers Ecran Titre
 function goTitle(){
+  //On arrête la musique du match
+  music.pause();
+  //On redirige vers l'écran titre
   game.state.start('GameTitle');
 }
 

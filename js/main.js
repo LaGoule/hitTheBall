@@ -9,7 +9,7 @@ var match = function(game){
 
 	BASESPEED = 4;
 	BASESLOWFACTOR = 60;
-	BOUNCEEFFECT = 1.08;
+	BOUNCEEFFECT = 1.04;
 	HOLDLOOPMS = 140;
 	HOLDPOWERADD = 0.2;
 	BASEPOWER = 0.8;
@@ -31,6 +31,10 @@ match.prototype = {
 		//Variables de positionnement
 		gwx = this.game.world.centerX; gwy = this.game.world.centerY;
 		gww = this.game.world.width; gwh = this.game.world.height;
+		//Musique
+		music = this.game.add.audio('mus_children');
+	    music.allowMultiple = false;
+	    music.addMarker('normal', 2, 0, 0.2, 0);
   },
 
   create: function() {
