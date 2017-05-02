@@ -6,6 +6,13 @@ var match = function(game){
   matchEnd = false; //
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
+	//Couleurs
+	red = '0xff0055';
+	green = '0x00dd55';
+	blue = '0x0022ff';
+	orange = '0xffbbbb';
+	black = '0x222222';
+	gray = '0x666666';
 
 	BASESPEED = 4;
 	BASESLOWFACTOR = 60;
@@ -16,7 +23,7 @@ var match = function(game){
 	MAXPOWER = 1.9;
 	YRECTIF = 40;
 
-	POINTSPERMATCH = 3;
+	POINTSPERMATCH = 5;
 	PLAYERNB = 2;
 
 	//Graphics
@@ -34,7 +41,7 @@ match.prototype = {
 		//Musique
 		music = this.game.add.audio('mus_children');
 	    music.allowMultiple = false;
-	    music.addMarker('normal', 2, 0, 0.2, 0);
+	    music.addMarker('normal', 2, 0, 0.24, 0);
   },
 
   create: function() {

@@ -19,12 +19,13 @@ preload.prototype = {
     this.game.load.image("greenball","res/greenball.png");
 
 		//Son et bruitages
-		this.game.load.audio("mus_children", 'snd/children.wav');
+		this.game.load.audio("mus_children", 'snd/children_low.wav');
 
 		this.game.load.audio("snd_hitball", 'snd/hitball.wav');
 		this.game.load.audio("snd_holdball", 'snd/charge2.wav');
 		this.game.load.audio("snd_goal", 'snd/goal.wav');
 		this.game.load.audio("snd_wallbounce", 'snd/wallhit.wav');
+		this.game.load.audio("snd_gem", 'snd/gem.wav');
 
 		console.log("2. All assets are preloaded.");
 	},

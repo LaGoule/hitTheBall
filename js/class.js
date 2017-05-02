@@ -60,14 +60,18 @@ Ball = function(game) {
   //Variables sonores
   this.sHit = game.add.audio('snd_hitball');
     this.sHit.allowMultiple = true;
-    this.sHit.addMarker('sndHit', 0.2, 1.2, 0.12, 0);
-    this.sHit.addMarker('sndWall', 0.5, 0.8, 0.18, 0);
+    this.sHit.addMarker('sndHit', 0.2, 1.2, 0.06, 0);
+    this.sHit.addMarker('sndWall', 0.5, 0.8, 0.22, 0);
+    this.sHit.addMarker('sndDrop', 0.4, 0.3, 0.14, 0);
   this.sHold = game.add.audio('snd_holdball');
     this.sHold.allowMultiple = false;
-    this.sHold.addMarker('sndHold', 0.1, 2.2, 0.16, 0);
+    this.sHold.addMarker('sndHold', 0.1, 2.2, 0.12, 0);
   this.sGoal = game.add.audio('snd_goal');
     this.sGoal.allowMultiple = false;
     this.sGoal.addMarker('sndGoal', 0.3, 6, 1.2, 0);
+  this.sGem = game.add.audio('snd_gem');
+    this.sGem.allowMultiple = true;
+    this.sGem.addMarker('sndGem', 1.2, 0.2, 0.30, 0);
 }
 
 //Update de la balle
@@ -90,6 +94,7 @@ Ball.prototype.update = function() {
 //Gestion de tous les deplacements de la balle
 Ball.prototype.move = function() {
   //Formule de vitesse de la balle
+  //A changer en fonction qui gère les types de mouvement (slice, dropshot, etc)
   if(this.playing && !this.slowOn){
     this.x += this.currSpd * this.dir;
     this.y += this.ySpd;
@@ -99,20 +104,6 @@ Ball.prototype.move = function() {
     this.sprClic.x =  this.game.input.x;
     this.sprClic.y =  this.game.input.y;
     this.sprClic.alpha = 0.5;
-
-    //On update la ligne de visée$
-    /*
-    this.fxLine.clear();
-      this.fxLine.ctx.beginPath();
-      this.fxLine.ctx.beginPath();
-      this.fxLine.ctx.moveTo(this.gBall.x, this.gBall.y);
-      this.fxLine.ctx.lineTo(game.input.x , game.input.y);
-      this.fxLine.ctx.lineWidth = 4;
-      this.fxLine.ctx.stroke();
-      this.fxLine.ctx.closePath();
-      this.fxLine.render();
-    }
-    */
   }
 
   //Desceleration Y
@@ -169,12 +160,13 @@ Ball.prototype.slowTheBall = function() {
 
       //On lance un son bruitages
       this.sHold.play('sndHold');
+      this.sprGlow.tint = 0xffffff;
 
       //Timer pour connaitre la vitesse du coup
       this.holdTimer.loop(HOLDLOOPMS, this.addPower, this);
       this.holdTimer.start();
 
-      this.sprGlow.scale.setTo(0.4,0.4);
+      this.sprGlow.scale.setTo(BALLGLOWMAX,BALLGLOWMAX);
       this.game.add.tween(this.sprGlow).to( { alpha: 0.6 }, 1000, Phaser.Easing.Linear.None, true);
       //this.game.add.tween(this.sprGlow).to( { tint: 0x00ffff }, 700, Phaser.Easing.Linear.None, true);
       this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMIN, y:BALLGLOWMIN }, 500, Phaser.Easing.Linear.None, true);
@@ -193,24 +185,14 @@ Ball.prototype.hitTheBall = function(type, player) {
     if(this.x<=gwx && this.color===1 || this.x>gwx && this.color===2){
       let pnb = player;
 
+      //On detruit le timer de hold
       this.holdTimer.destroy();
 
+      //On cache le pointeur rouge
       this.sprClic.alpha = 0;
-
-      //On lance un son bruitages
-      this.sHit.play('sndHit');
 
       //On incrémente le combo de passes
       this.combo++;
-      //On modifie le meilleur combo si nécessaire
-      /*
-      if(this.combo>bestCombo){
-        bestCombo = this.combo;
-      }
-      if(this.power===BASEPOWER){
-        this.power = 0;
-      }
-      */
 
       //On modifie vitesse et direction
       //A changer --> faire fonction de tirs général (amortis, smash, slices)
@@ -218,16 +200,24 @@ Ball.prototype.hitTheBall = function(type, player) {
       if(this.cursorX<this.game.input.x){
         this.dir = -1;
         this.type = 0;
+        //On lance un son bruitages
+        this.sHit.play('sndHit');
         //log
         console.log('Player ', this.lastHit+1, ' HOLDSHOT!');
       }else if(this.cursorX>this.game.input.x){
         this.dir = 1;
         this.type = 0;
+        //On lance un son bruitages
+        this.sHit.play('sndHit');
         //log
         console.log('Player ', this.lastHit+1, ' HOLDSHOT!');
       }else{
         this.dir *= (-1);
+        this.currSpd *= 0.6; //Teste
         this.type = 1;
+        //On lance un son bruitages
+        this.sHit.play('sndDrop');
+        this.sprGlow.tint = 0xff0044;
         //log
         console.log('Player ', this.lastHit+1, ' DROPSHOT!');
         //this.sprGlow.tint = 0xff00ff;
@@ -256,6 +246,9 @@ Ball.prototype.hitTheBall = function(type, player) {
       this.playing = true;
       this.slowOn = false;
 
+
+      this.sprGlow.scale.setTo(BALLGLOWMIN,BALLGLOWMIN);
+
       //this.sprGlow.scale.setTo(0.3,0.3);
       this.game.add.tween(this.sprGlow).to( { alpha: 0.2 }, 200, Phaser.Easing.Linear.None, true);
       //this.game.add.tween(this.sprGlow).to( { tint: 0xffffff }, 100, Phaser.Easing.Linear.None, true);
@@ -273,7 +266,7 @@ Ball.prototype.hitTheBall = function(type, player) {
 
 //Fonction qui ajoute du pouvoir aux balles chargés
 Ball.prototype.addPower = function() {
-  if(this.power<MAXPOWER-0.1){
+  if(this.power<MAXPOWER){ //Attention !
     this.power += HOLDPOWERADD;
   }
 }
@@ -283,6 +276,9 @@ Ball.prototype.changeColor = function() {
   if(this.color>0){
     this.color=0;
   }else{
+    //On lance un son bruitages
+    this.sGem.play('sndGem');
+
     if(this.dir===-1){
       this.color=1;
     }else{
@@ -292,20 +288,6 @@ Ball.prototype.changeColor = function() {
   //On change le sprite en fonction
   this.spr.frame = this.color;
 }
-/*
-Ball.prototype.drawLine = function(){
-  bmd.clear();
-  bmd.ctx.beginPath();
-  bmd.ctx.beginPath();
-  bmd.ctx.moveTo(10, 10);
-  bmd.ctx.lineTo(game.input.x , game.input.y);
-  bmd.ctx.lineWidth = 4;
-  bmd.ctx.stroke();
-  bmd.ctx.closePath();
-  bmd.render();
-  bmd.refreshBuffer();
-};
-*/
 
 //Lancement de la balle
 Ball.prototype.goBall = function() {
