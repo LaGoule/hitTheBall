@@ -7,12 +7,15 @@ var match = function(game){
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
 	//Couleurs
-	red = '0xff0055';
-	green = '0x00dd55';
-	blue = '0x0022ff';
-	orange = '0xffbbbb';
+	red = '0xff0000';
+	yellow = '0xdd9933';
+	green = '0x55ff55';
+	purple = '0xaa0099';
+	blue = '0x6644ff';
+	crimson = '0xff2244';
+	white = '0xffffff';
 	black = '0x222222';
-	gray = '0x666666';
+	gray = '0x999999';
 
 	BASESPEED = 4;
 	BASESLOWFACTOR = 60;

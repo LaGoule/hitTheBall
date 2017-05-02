@@ -19,7 +19,7 @@ preload.prototype = {
     this.game.load.image("greenball","res/greenball.png");
 
 		//Son et bruitages
-		this.game.load.audio("mus_children", 'snd/children_low.wav');
+		this.game.load.audio("mus_children", 'snd/children_vlow.wav');
 
 		this.game.load.audio("snd_hitball", 'snd/hitball.wav');
 		this.game.load.audio("snd_holdball", 'snd/charge2.wav');

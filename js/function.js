@@ -5,39 +5,38 @@ function initMatch(game){
   matchRound = 1;
   theBall = new Ball(game);
   theBall.reset();
-  //On lance la balle
-  self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
   //On lance la musique
   music.pause();
   music.play('normal');
+  //On le timer qui lance la balle
+  self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
   //On affiche un message de début de partie
   console.log('---> Bonne partie! | Round: ',matchRound);
 };
 
-//Fonction de création des deux joueurs
+//Fonction de fin d'un round (goal)
 function endRound(game, winn){
-
-  workingButtons = false;
   var self = game;
   let winner = winn;
+  workingButtons = false;
 
   //Si personne n'a toucher la balle
   if(winner===undefined){
+    //Which side is the goal?
     if(theBall.x < gwx){
       winner = 1;
     }else{
       winner = 0;
     }
   }
-
+  //On met en surbrillance la zone du vainqueur
+  //A Definir dans une fonction render ou goalFx
   goalZone = self.game.add.graphics(0, 0);
-  //goalZone.lineStyle(0);
-  console.log(winner);
   if(winner===0){
-    goalZone.beginFill(0xFF00CC, 0.3);
+    goalZone.beginFill(0xFF00CC, 0.7);
     goalZone.drawRect(0,0,gwx,gwh);
   }else{
-    goalZone.beginFill(0x00EEFF, 0.3);
+    goalZone.beginFill(0x00EEFF, 0.7);
     goalZone.drawRect(gwx,0,gww,gwh);
   }
   goalZone.alpha = 0.4;
@@ -51,7 +50,6 @@ function endRound(game, winn){
 
   //3. Est-ce que la partie est fini?
   bestPlayer = whoIsAhead(self);
-
   if(bestPlayer!=-1){
     if(p[bestPlayer].score>=POINTSPERMATCH){
       //Appelle d'une fonction qui termine le match ici
@@ -64,15 +62,19 @@ function endRound(game, winn){
 
   //4. On lance un nouveau round ou on arrête le match
   if(!matchEnd){
+    //Nouveau round
     self.game.time.events.add(Phaser.Timer.SECOND * 2, newRound, this);
   }else{
+    //Affichage du score
     if(bestPlayer){
       var winX = gww-170;
     }else{
       var winX = 32;
     }
-    self.game.debug.text("GAGNANT: J" + (bestPlayer+1) + '!',winX,gwy);
-    self.game.time.events.add(Phaser.Timer.SECOND * 4, goTitle, this);
+    self.game.time.events.add(Phaser.Timer.SECOND * 3, goTitle, this);
+    //Faire un affichage des score ici!!!!!
+    //self.game.debug.text("GAGNANT: J" + (bestPlayer+1) + '!',winX,gwy);
+    //self.game.time.events.add(Phaser.Timer.SECOND * 4, goTitle, this);
   }
 };
 
@@ -80,9 +82,9 @@ function endRound(game, winn){
 function newRound(){
   //On retire le marqueur de goal
   goalZone.alpha = 0;
-  //On arrête la ball
+  //On reset la ball
   theBall.reset();
-  //On lance la balle
+  //On le timer qui lance la balle
   self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
   //theBall.goBall();
 };
@@ -131,12 +133,12 @@ function resetMatch(){
 }
 
 function drawBoard(parent){
-
   let self = parent;
   let stroke = 10;
 
   //Styles
-  var stSimple = { font: "90px Times", fill: "#ffdd66", align: "center" };
+  var stSimple = { font: "80px Arial", fill: black, align: "center" };
+  var stSmall = { font: "40px Arial", fill: black, align: "center" };
 
   var board = self.game.add.group()
 
@@ -154,9 +156,11 @@ function drawBoard(parent){
 
   window.graphics += pZones;
 
-  /*
-  txCombo = game.add.text(gwx,50,'0',stSimple);
-  txCombo.anchor.setTo(0.5);
-  txCombo.alpha = 0;
-  */
+  txCombo = game.add.text(gwx,40,'0',stSmall);
+    txCombo.anchor.setTo(0.5);
+    txCombo.alpha = 1;
+
+  txSpd = game.add.text(gwx,gwh-30,'0m/s',stSmall);
+    txSpd.anchor.setTo(0.5);
+    txSpd.alpha = 1;
 }
