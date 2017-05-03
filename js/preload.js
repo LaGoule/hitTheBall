@@ -30,6 +30,7 @@ preload.prototype = {
     this.game.load.spritesheet("ball","res/ballsheet.png",250,250);
     this.game.load.image("redball","res/redball.png");
     this.game.load.image("greenball","res/greenball.png");
+		this.game.load.image("star","res/star.png");
 
 		//Son et bruitages
 		this.game.load.audio("mus_children", 'snd/children_vlow.wav');

@@ -10,8 +10,7 @@ function initMatch(game){
     music.pause();
     music.play('normal');
   }
-  //On le timer qui lance la balle
-  //self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
+  //On lance le timer qui lance la balle
   newTimer(2,theBall.goBall,theBall);
   //On affiche un message de début de partie
   console.log('---> Bonne partie! | Round: ',matchRound);
@@ -20,11 +19,11 @@ function initMatch(game){
 //Fonction qui enclenche le prochain round
 function newRound(){
   //On retire le marqueur de goal
-  goalZone.alpha = 0;
+  goalZone[0].alpha = 0;
+  goalZone[1].alpha = 0;
   //On reset la ball
   theBall.reset();
   //On lance le timer qui lance la balle
-  //self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
   newTimer(2,theBall.goBall,theBall);
 };
 
@@ -32,47 +31,33 @@ function newRound(){
 function endRound(game, winn){
   var self = game;
   let winner = winn;
+
+  //On désactive les inputs
   workingButtons = false;
 
   //Si personne n'a toucher la balle
   if(winner===undefined){
     //Which side is the goal?
-    if(theBall.x < gwx){
-      winner = 1;
-    }else{
-      winner = 0;
-    }
+    if(theBall.x < gwx){ winner = 1; }else{ winner = 0; }
   }
   //On met en surbrillance la zone du vainqueur
-  //A Definir dans une fonction render ou goalFx
-  goalZone = self.game.add.graphics(0, 0);
-  if(winner===0){
-    goalZone.beginFill(0xFF00CC, 0.7);
-    goalZone.drawRect(0,0,gwx,gwh);
-  }else{
-    goalZone.beginFill(0x00EEFF, 0.7);
-    goalZone.drawRect(gwx,0,gww,gwh);
-  }
-  goalZone.alpha = 0.4;
+  this.game.add.tween(goalZone[winner]).to( { alpha: 0.6}, 1000, Phaser.Easing.Sinusoidal.InOut, true);
 
   //1. On attribue les points
   p[winner].score += 1;
-  console.log('Gagnant du round: Joueur ', winner+1);
   console.log('Fin du round, score: ',p[0].score,'-',p[1].score);
-
+  //On change l'affichage du score
   txPScore[winner].setText(p[winner].score);
 
-  //2. On montre de niveau les joueurs?
-
-  //3. Est-ce que la partie est fini?
+  //2. Est-ce que la partie est fini?
   bestPlayer = whoIsAhead(self);
   if(bestPlayer!=-1){
     if(p[bestPlayer].score>=POINTSPERMATCH){
-      //Appelle d'une fonction qui termine le match ici
-      theBall.reset();
-
+      //Fin du match
       matchEnd = true;
       workingButtons = false;
+      //Appelle d'une fonction qui termine le match ici
+      newTimer(2,terminateMatch,this);
     }
   }
 
@@ -82,9 +67,15 @@ function endRound(game, winn){
     newTimer(2,newRound,this);
   }else{
     //Ecran titre
-    newTimer(4,goTitle,this);
+    newTimer(6,goTitle,this);
   }
 };
+
+//Fonction qui lance la fin du match
+terminateMatch = function() {
+  theBall.reset();
+  theBall.sprGlow.tint = white;
+}
 
 //Fonction qui retourne le joueur en tête
 function whoIsAhead(game){
@@ -150,14 +141,22 @@ function drawBoard(parent){
     pZones.beginFill(0x00EEFF, 0.1);
     pZones.lineStyle(0);
     pZones.drawRect(gwx,0,gww,gwh);
-
   window.graphics += pZones;
+
+  goalZone[0] = self.game.add.graphics(0, 0);
+    goalZone[0].beginFill(0xFF00CC, 0.7);
+    goalZone[0].drawRect(0,0,gwx,gwh);
+    goalZone[0].alpha = 0;
+  goalZone[1] = self.game.add.graphics(0, 0);
+    goalZone[1].beginFill(0x00EEFF, 0.7);
+    goalZone[1].drawRect(gwx,0,gww,gwh);
+    goalZone[1].alpha = 0;
 
   txCombo = game.add.text(gwx,40,'0',stSmall);
     txCombo.anchor.setTo(0.5);
     txCombo.alpha = 0.5;
 
-  txSpd = game.add.text(gwx,gwh-30,'0m/s',stSmall);
+  txSpd = game.add.text(gwx,gwh-36,'0m/s',stSmall);
     txSpd.anchor.setTo(0.5);
     txSpd.alpha = 0.5;
 

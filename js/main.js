@@ -6,13 +6,15 @@ var match = function(game){
   matchEnd = false; //
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
+	goalZone = []; //Objet qui contient les goal visuel en cas de but
+	glowTween = []; //Objet qui contient les tween de la balle
 
 	//Couleurs
 	red = '0xff0000';
 	yellow = '0xdd9933';
 	green = '0x55ff55';
 	purple = '0xaa0099';
-	blue = '0x6644ff';
+	blue = '0x4422ff';
 	crimson = '0xff2244';
 	white = '0xffffff';
 	black = '0x222222';
@@ -32,8 +34,8 @@ var match = function(game){
 
 	//Graphics
 	GMARGIN = 10;
-	BALLGLOWMAX = 0.52;
-	BALLGLOWMIN = 0.34;
+	BALLGLOWMAX = 0.48;
+	BALLGLOWMIN = 0.32;
 	BALLALPHAMAX = 0.5;
 	BALLALPHAMIN = 0.2;
 }

@@ -19,12 +19,21 @@ Ball = function(game) {
   this.playing = false;
   this.game = game;
 
+  //Tween et animation
+  this.tweenOn = false;
+
   //Variables de positionnements
   this.x = 0;
   this.y = 0;
   this.xToGoal = undefined;
   //Timers
   this.holdTimer = game.time.create(false);
+
+  //Particules
+  this.emitter = game.add.emitter(0,0,800);
+    this.emitter.makeParticles('star');
+    this.emitter.setAlpha(1, 0.2, 1200);
+    this.emitter.setScale(-0.2, 0.38, 0.2, 0.38, 600, Phaser.Easing.Sinusoidal.InOut, true);
 
   //Variables graphiques et inputs
   this.gBall = game.add.group();
@@ -53,16 +62,16 @@ Ball = function(game) {
     this.sHit.allowMultiple = true;
     this.sHit.addMarker('sndHit', 0.2, 1.2, 0.06, 0);
     this.sHit.addMarker('sndWall', 0.5, 0.8, 0.22, 0);
-    this.sHit.addMarker('sndDrop', 0.4, 0.3, 0.14, 0);
+    this.sHit.addMarker('sndDrop', 0.4, 0.3, 0.18, 0);
   this.sHold = game.add.audio('snd_holdball');
     this.sHold.allowMultiple = false;
-    this.sHold.addMarker('sndHold', 0.1, 2.2, 0.12, 0);
+    this.sHold.addMarker('sndHold', 0.1, 2.2, 0.14, 0);
   this.sGoal = game.add.audio('snd_goal');
     this.sGoal.allowMultiple = false;
     this.sGoal.addMarker('sndGoal', 0.3, 6, 1.2, 0);
   this.sGem = game.add.audio('snd_gem');
     this.sGem.allowMultiple = true;
-    this.sGem.addMarker('sndGem', 1.2, 0.2, 0.30, 0);
+    this.sGem.addMarker('sndGem', 1.4, 0.2, 0.24, 0);
 }
 
 //Update de la balle
@@ -98,13 +107,13 @@ Ball.prototype.behaviour = function() {
       //Switch de différents coups !!
       switch(this.type) {
         case 0: //Slow
-          this.sprGlow.tint = purple;
+          //this.sprGlow.tint = purple;
           this.slowMove();
         break;
         case 1: //Normal
-          this.sprGlow.tint = green;
+          //this.sprGlow.tint = green;
           this.normalMove();
-          this.ySpdRectif(0.9);
+          this.ySpdRectif(0.5);
         break;
         case 2: //Dropshot
           this.sprGlow.tint = red;
@@ -113,7 +122,7 @@ Ball.prototype.behaviour = function() {
         case 3: //Wallbounce
           this.sprGlow.tint = blue;
           this.normalMove();
-          this.ySpdRectif(1.4);
+          this.ySpdRectif(1.8);
         break;
       }
     break;
@@ -161,8 +170,9 @@ Ball.prototype.goals = function() {
     this.state = 2;
     let winner = 0;
     //Animation de goal
-    this.game.add.tween(this.sprGlow.scale).to( {x:4, y:4 }, 1000, Phaser.Easing.Linear.None, true);
-    this.game.add.tween(this.sprGlow).to( {alpha:0 }, 1000, Phaser.Easing.Linear.None, true);
+    this.tweenGlow(1000, 4, 0, white);
+    //this.game.add.tween(this.sprGlow.scale).to( {x:4, y:4 }, 1000, Phaser.Easing.Linear.None, true);
+    //this.game.add.tween(this.sprGlow).to( {alpha:0 }, 1000, Phaser.Easing.Linear.None, true);
     //Définir qui marque le point
     if(this.dir===1){
       winner=0;
@@ -170,7 +180,9 @@ Ball.prototype.goals = function() {
       winner=1;
     }
     //On lance un son bruitages
-    this.sGoal.play('sndGoal');
+    if(oSounds){
+      this.sGoal.play('sndGoal');
+    }
     //On lance la fin du round
     endRound(this.game, winner);
   }
@@ -182,10 +194,40 @@ Ball.prototype.rebound = function() {
     this.type = 3;
 
     this.ySpd *= (-BOUNCEEFFECT);
+
+    //Les ptites étoiles de collision
+    if(oFx){
+      this.emitter.x = this.x;
+      this.emitter.y = this.y;
+      if(this.y<gwy){
+        this.emitter.y -= this.spr.width/2;
+        this.emitter.gravity = 400;
+      }else{
+        this.emitter.y += this.spr.width/2;
+        this.emitter.gravity = -400;
+      }
+      this.emitter.start(true, 800, null, 8);
+    }
+
     //On lance un son bruitages
-    this.sHit.play('sndWall');
+    if(oSounds){
+      this.sHit.play('sndWall');
+    }
     //log
     console.log('Player ', this.lastHit+1, ' WALLBOUNCE!');
+  }
+  safeMod = 0; //Active le mode safe
+  //Fait rebondir la balle sur les bords haut et bas
+  if(safeMod){
+    if(this.x<=0+(this.spr.width/2)-this.currSpd || this.x>=gww-(this.spr.width/2)-this.currSpd){
+      this.type = 3;
+
+      this.dir *= -1;
+      //On lance un son bruitages
+      if(oSounds){
+        this.sHit.play('sndWall');
+      }
+    }
   }
 }
 
@@ -204,14 +246,17 @@ Ball.prototype.slowTheBall = function() {
       this.power = BASEPOWER
 
       //On lance un son bruitages
-      this.sHold.play('sndHold');
+      if(oSounds){
+        this.sHold.play('sndHold');
+      }
 
       //Timer pour connaitre la vitesse du coup
       this.holdTimer.loop(HOLDLOOPMS, this.addPower, this);
       this.holdTimer.start();
 
-      this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMIN, y:BALLGLOWMIN }, 500, Phaser.Easing.Linear.None, true);
-      this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMAX }, 1200, Phaser.Easing.Linear.None, true);
+      this.tweenGlow(1000, BALLGLOWMIN, BALLALPHAMAX, purple);
+      //this.slowTween = this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMIN, y:BALLGLOWMIN }, 500, Phaser.Easing.Linear.None, true);
+      //this.slowTween2 = this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMAX }, 1200, Phaser.Easing.Linear.None, true);
 
       //On calcule le lancer sur Y
       this.cursorX = this.game.input.x;
@@ -233,6 +278,11 @@ Ball.prototype.hitTheBall = function(type, player) {
       //On cache le pointeur rouge
       this.sprClic.alpha = 0;
 
+      //Animation de retour à la normal
+      this.tweenGlow(300, BALLGLOWMAX, BALLALPHAMIN, green);
+      //this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMAX, y:BALLGLOWMAX }, 300, Phaser.Easing.Linear.None, true);
+      //this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMIN }, 300, Phaser.Easing.Linear.None, true);
+
       //On incrémente le combo de passes
       this.combo++;
       txCombo.setText(this.combo);
@@ -245,14 +295,18 @@ Ball.prototype.hitTheBall = function(type, player) {
         this.type = 1;
         this.dir = -1;
         //On lance un son bruitages
-        this.sHit.play('sndHit');
+        if(oSounds){
+          this.sHit.play('sndHit');
+        }
         //log
         console.log('Player ', this.lastHit+1, ' HOLDSHOT!');
       }else if(this.cursorX-10>this.game.input.x){
         this.type = 1;
         this.dir = 1;
         //On lance un son bruitages
-        this.sHit.play('sndHit');
+        if(oSounds){
+          this.sHit.play('sndHit');
+        }
         //log
         console.log('Player ', this.lastHit+1, ' HOLDSHOT!');
       }else{
@@ -260,9 +314,11 @@ Ball.prototype.hitTheBall = function(type, player) {
         this.dir *= (-1);
         this.currSpd *= 0.5; //Teste
         this.delaySpd = this.currSpd;
-        this.maxDelaySpd = this.delaySpd * 2.2;
+        this.maxDelaySpd = this.delaySpd * 2.3; //Creer un facteur de multiplication
         //On lance un son bruitages
-        this.sHit.play('sndDrop');
+        if(oSounds){
+          this.sHit.play('sndDrop');
+        }
         //log
         console.log('Player ', this.lastHit+1, ' DROPSHOT!');
       }
@@ -288,9 +344,6 @@ Ball.prototype.hitTheBall = function(type, player) {
       if(this.power>=1.5){console.log('Puissance du hold: ',this.power);}
       this.playing = true;
 
-      this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMAX, y:BALLGLOWMAX }, 400, Phaser.Easing.Linear.None, true);
-      this.game.add.tween(this.sprGlow).to( { alpha: BALLAPLHAMIN }, 400, Phaser.Easing.Linear.None, true);
-
       //Qui a touché la balle en dernier
       if(this.x<gwx){ //P1
         this.lastHit = 0;
@@ -299,6 +352,31 @@ Ball.prototype.hitTheBall = function(type, player) {
       }
     }
   }
+}
+
+Ball.prototype.tweenGlow = function(duration, toScale, toAlpha, toTint) {
+  let ms = duration;
+  let scaleV = toScale;
+  let alphaV = toAlpha;
+  let colorV = toTint;
+
+  //Si une animation est déjà lancée on la stop
+  if(this.tweenOn){
+    glowTween[0].pause();
+    glowTween[1].pause();
+  }
+  this.tweenOn = true;
+
+  glowTween[0] = this.game.add.tween(this.sprGlow.scale)
+  glowTween[0].to( {x:scaleV, y:scaleV }, ms, Phaser.Easing.Linear.None, true);
+
+  glowTween[1] = this.game.add.tween(this.sprGlow)
+  glowTween[1].to( { alpha: alphaV}, ms, Phaser.Easing.Linear.None, true);
+  glowTween[1].onComplete.addOnce(function(){
+    this.tweenOn = false;
+  }, this);
+  //Change sprite color by tint
+  this.sprGlow.tint = colorV;
 }
 
 //Fonction qui ajoute du pouvoir aux balles chargés
@@ -314,7 +392,9 @@ Ball.prototype.changeGem = function() {
     this.gem=0;
   }else{
     //On lance un son bruitages
-    this.sGem.play('sndGem');
+    if(oSounds){
+      this.sGem.play('sndGem');
+    }
 
     if(this.dir===-1){
       this.gem=1;
@@ -333,7 +413,9 @@ Ball.prototype.goBall = function() {
   this.type = 1;
 
   //On lance un son bruitages
-  this.sHit.play('sndHit');
+  if(oSounds){
+    this.sHit.play('sndHit');
+  }
 
   this.currSpd = this.baseSpd;
   this.dir = Math.round(Math.random(0,1));
@@ -373,14 +455,15 @@ Ball.prototype.reset = function() {
   this.spr.frame = 0;
 
   this.sprGlow.inputEnabled = false;
-  this.sprGlow.scale.setTo(BALLGLOWMAX);
-  this.sprGlow.alpha = BALLALPHAMAX;
-  this.sprGlow.tint = black;
+  this.sprGlow.scale.setTo(BALLGLOWMAX+0.5);
+  this.sprGlow.alpha = 0;
+  this.sprGlow.tint = white;
 
   this.sprClic.alpha = 0;
 
-  this.game.add.tween(this.spr).to( { alpha: 1 }, 600, Phaser.Easing.Linear.None, true);
-  this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMIN }, 700, Phaser.Easing.Linear.None, true);
+  this.tweenGlow(1200, BALLGLOWMAX, BALLALPHAMIN, black);
+  this.game.add.tween(this.spr).to( { alpha: 1 }, 800, Phaser.Easing.Linear.None, true);
+  //this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMIN }, 700, Phaser.Easing.Linear.None, true);
 
   this.sGoal.pause();
 

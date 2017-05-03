@@ -37,9 +37,11 @@ gametitle.prototype = {
   muteMusic: function(){
     if(oMusic){
       oMusic = false;
+      oSounds = false;
       muteButton.frame = 1;
     }else{
       oMusic = true;
+      oSounds = true;
       muteButton.frame = 0;
     }
   },
