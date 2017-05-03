@@ -37,8 +37,9 @@ preload.prototype = {
 
 		this.game.load.audio("snd_hitball", 'snd/hitball.wav');
 		this.game.load.audio("snd_holdball", 'snd/charge2.wav');
-		this.game.load.audio("snd_goal", 'snd/goal.wav');
 		this.game.load.audio("snd_wallbounce", 'snd/wallhit.wav');
+		this.game.load.audio("snd_dropball", 'snd/drop.wav');
+		this.game.load.audio("snd_goal", 'snd/goal.wav');
 		this.game.load.audio("snd_gem", 'snd/gem.wav');
 
 		console.log("2. All assets are preloaded.");

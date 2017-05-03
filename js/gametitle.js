@@ -14,8 +14,8 @@ gametitle.prototype = {
       playButton.inputEnabled = true;
       playButton.events.onInputDown.add(this.playTheGame, this);
       playButton.anchor.setTo(0.5,0.5);
-      //playButton.animation.add('rainbow', [0,1,2,3,4,5], 20, true);
-      //playButton.animation.play('rainbow');
+      playButton.animations.add('rainbow');
+      playButton.animations.play('rainbow', 16, true);
     muteButton = this.game.add.sprite(40,20,"icons");
       muteButton.frame = 0;
       muteButton.inputEnabled = true;

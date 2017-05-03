@@ -4,6 +4,7 @@ var match = function(game){
 	workingButtons = true; //Pour la pause etc...
   matchRound = undefined; //Contient le numero du round
   matchEnd = false; //
+	lastWinner = undefined //Contient le dernier player a avoir marquer
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
 	goalZone = []; //Objet qui contient les goal visuel en cas de but
@@ -11,11 +12,12 @@ var match = function(game){
 
 	//Couleurs
 	red = '0xff0000';
-	yellow = '0xdd9933';
+	yellow = '0xcc9922';
 	green = '0x55ff55';
-	purple = '0xaa0099';
-	blue = '0x4422ff';
+	purple = '0xcc0088';
+	blue = '0x0000ff';
 	crimson = '0xff2244';
+	brown = '0xaa4400';
 	white = '0xffffff';
 	black = '0x222222';
 	gray = '0x999999';

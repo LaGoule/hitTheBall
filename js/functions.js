@@ -45,6 +45,7 @@ function endRound(game, winn){
 
   //1. On attribue les points
   p[winner].score += 1;
+  lastWinner = winner;
   console.log('Fin du round, score: ',p[0].score,'-',p[1].score);
   //On change l'affichage du score
   txPScore[winner].setText(p[winner].score);
@@ -125,13 +126,15 @@ function drawBoard(parent){
   let stroke = 10;
 
   //Styles
-  var stSimple = { font: "80px Arial", fill: purple, align: "center" };
-  var stSmall = { font: "40px Arial", fill: purple, align: "center" };
+  var stSimple = { font: "80px Arial", fill: gray, align: "center" };
+  var stSmall = { font: "40px Arial", fill: gray, align: "center" };
 
   var board = self.game.add.group()
 
   //On charge la texture de fond
+  game.stage.backgroundColor = "#ffffff";
   var bg = self.game.add.sprite(0,0,'bg');
+    bg.alpha = 0.9;
 
   var pZones = self.game.add.graphics(0, 0);
     pZones.beginFill(0xFF00CC, 0.1);
@@ -144,11 +147,11 @@ function drawBoard(parent){
   window.graphics += pZones;
 
   goalZone[0] = self.game.add.graphics(0, 0);
-    goalZone[0].beginFill(0xFF00CC, 0.7);
+    goalZone[0].beginFill(0xFF00CC, 0.5);
     goalZone[0].drawRect(0,0,gwx,gwh);
     goalZone[0].alpha = 0;
   goalZone[1] = self.game.add.graphics(0, 0);
-    goalZone[1].beginFill(0x00EEFF, 0.7);
+    goalZone[1].beginFill(0x00EEFF, 0.5);
     goalZone[1].drawRect(gwx,0,gww,gwh);
     goalZone[1].alpha = 0;
 

@@ -33,7 +33,7 @@ Ball = function(game) {
   this.emitter = game.add.emitter(0,0,800);
     this.emitter.makeParticles('star');
     this.emitter.setAlpha(1, 0.2, 1200);
-    this.emitter.setScale(-0.2, 0.38, 0.2, 0.38, 600, Phaser.Easing.Sinusoidal.InOut, true);
+    this.emitter.setScale(-0.2, 0.4, 0.2, 0.4, 600, Phaser.Easing.Sinusoidal.InOut, true);
 
   //Variables graphiques et inputs
   this.gBall = game.add.group();
@@ -62,7 +62,9 @@ Ball = function(game) {
     this.sHit.allowMultiple = true;
     this.sHit.addMarker('sndHit', 0.2, 1.2, 0.06, 0);
     this.sHit.addMarker('sndWall', 0.5, 0.8, 0.22, 0);
-    this.sHit.addMarker('sndDrop', 0.4, 0.3, 0.18, 0);
+  this.sDrop = game.add.audio('snd_dropball');
+    this.sDrop.allowMultiple = true;
+    this.sDrop.addMarker('sndDrop', 1.7, 1.4, 0.4, 0);
   this.sHold = game.add.audio('snd_holdball');
     this.sHold.allowMultiple = false;
     this.sHold.addMarker('sndHold', 0.1, 2.2, 0.14, 0);
@@ -86,6 +88,9 @@ Ball.prototype.update = function() {
     //La balle suit son comportement de deplacement
     this.move();
   }
+  //Affichage de la vitesse à chaque frame
+  txSpd.setText((Math.floor(this.currSpd)) + ' km/h');
+
   //On deplace toujours les sprites sur l'objet
   this.gBall.x = this.x;
   this.gBall.y = this.y;
@@ -122,7 +127,15 @@ Ball.prototype.behaviour = function() {
         case 3: //Wallbounce
           this.sprGlow.tint = blue;
           this.normalMove();
-          this.ySpdRectif(1.8);
+          this.ySpdRectif(1.9);
+        break
+        case 4: //Reversal
+          //A faire mais... ??
+          this.sprGlow.tint = yellow;
+        break;
+        case 5: //Wallgrip
+          //A faire: s'accroche au mur, puis pars en ligne droite
+          this.sprGlow.tint = brown;
         break;
       }
     break;
@@ -160,6 +173,8 @@ Ball.prototype.dropMove = function() {
 
 Ball.prototype.ySpdRectif = function(amount) {
   if(Math.abs(this.ySpd)>0.4){//Creer une constante ici
+    //Je suis pas sur de cette ligne.. a la base c'est pour verser la vitesse y sur la vitesse x
+    this.currSpd += ((Math.abs(this.ySpd))/(YRECTIF))/5;
     this.ySpd = this.ySpd - (this.ySpd/(YRECTIF*amount));
   }
 }
@@ -171,14 +186,8 @@ Ball.prototype.goals = function() {
     let winner = 0;
     //Animation de goal
     this.tweenGlow(1000, 4, 0, white);
-    //this.game.add.tween(this.sprGlow.scale).to( {x:4, y:4 }, 1000, Phaser.Easing.Linear.None, true);
-    //this.game.add.tween(this.sprGlow).to( {alpha:0 }, 1000, Phaser.Easing.Linear.None, true);
     //Définir qui marque le point
-    if(this.dir===1){
-      winner=0;
-    }else if(this.dir===-1){
-      winner=1;
-    }
+    if(this.dir===1){ winner=0; }else if(this.dir===-1){ winner=1; }
     //On lance un son bruitages
     if(oSounds){
       this.sGoal.play('sndGoal');
@@ -196,6 +205,7 @@ Ball.prototype.rebound = function() {
     this.ySpd *= (-BOUNCEEFFECT);
 
     //Les ptites étoiles de collision
+    //A transformer en fonction emitStars
     if(oFx){
       this.emitter.x = this.x;
       this.emitter.y = this.y;
@@ -206,7 +216,7 @@ Ball.prototype.rebound = function() {
         this.emitter.y += this.spr.width/2;
         this.emitter.gravity = -400;
       }
-      this.emitter.start(true, 800, null, 8);
+      this.emitter.start(true, 800, null, 6);
     }
 
     //On lance un son bruitages
@@ -216,6 +226,7 @@ Ball.prototype.rebound = function() {
     //log
     console.log('Player ', this.lastHit+1, ' WALLBOUNCE!');
   }
+  /*
   safeMod = 0; //Active le mode safe
   //Fait rebondir la balle sur les bords haut et bas
   if(safeMod){
@@ -229,12 +240,15 @@ Ball.prototype.rebound = function() {
       }
     }
   }
+  */
 }
 
 Ball.prototype.changeSide = function() {
   //Se déclanche dès que la balle change de côté
-  if((this.x<gwx && this.dir===1 && this.x+this.currSpd>=gwx) || (this.x>gwx && this.dir===(-1) && this.x-this.currSpd<=gwx)){
-    this.changeGem();
+  if(this.playing){
+    if((this.x<gwx && this.dir===1 && this.x+this.currSpd>=gwx) || (this.x>gwx && this.dir===(-1) && this.x-this.currSpd<=gwx)){
+      this.changeGem();
+    }
   }
 }
 
@@ -242,6 +256,7 @@ Ball.prototype.changeSide = function() {
 Ball.prototype.slowTheBall = function() {
   if(workingButtons && this.type!=0){
     if(this.x<=gwx && this.gem===1 || this.x>gwx && this.gem===2){
+
       this.type = 0;
       this.power = BASEPOWER
 
@@ -255,8 +270,6 @@ Ball.prototype.slowTheBall = function() {
       this.holdTimer.start();
 
       this.tweenGlow(1000, BALLGLOWMIN, BALLALPHAMAX, purple);
-      //this.slowTween = this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMIN, y:BALLGLOWMIN }, 500, Phaser.Easing.Linear.None, true);
-      //this.slowTween2 = this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMAX }, 1200, Phaser.Easing.Linear.None, true);
 
       //On calcule le lancer sur Y
       this.cursorX = this.game.input.x;
@@ -266,10 +279,18 @@ Ball.prototype.slowTheBall = function() {
   }
 }
 
+//Fonction qui ajoute du pouvoir aux balles chargés
+Ball.prototype.addPower = function() {
+  if(this.power<MAXPOWER){ //Attention !
+    this.power += HOLDPOWERADD;
+  }
+}
+
 //Fonction hitTheBall
 Ball.prototype.hitTheBall = function(type, player) {
   if(workingButtons){
     if(this.x<=gwx && this.gem===1 || this.x>gwx && this.gem===2){
+
       let pnb = player;
 
       //On detruit le timer de hold
@@ -280,18 +301,22 @@ Ball.prototype.hitTheBall = function(type, player) {
 
       //Animation de retour à la normal
       this.tweenGlow(300, BALLGLOWMAX, BALLALPHAMIN, green);
-      //this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMAX, y:BALLGLOWMAX }, 300, Phaser.Easing.Linear.None, true);
-      //this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMIN }, 300, Phaser.Easing.Linear.None, true);
 
       //On incrémente le combo de passes
       this.combo++;
       txCombo.setText(this.combo);
       txSpd.setText((Math.floor(this.currSpd)) + 'm/s');
 
+      //---------------------------------------------Début du gros bordel
+
+      //----> créer une putin de fonction determineMove(); !!!
+
       //On modifie vitesse et direction
-      //A changer --> faire fonction de tirs général (amortis, smash, slices)
+      //A changer --> faire fonction de préparation de tirs général (amortis, smash, slices)
       //Deplacer la balle en fonction de l'angles du pointeurs
       if(this.cursorX+10<this.game.input.x){
+        //Normal
+        //loadMove(1);
         this.type = 1;
         this.dir = -1;
         //On lance un son bruitages
@@ -301,6 +326,8 @@ Ball.prototype.hitTheBall = function(type, player) {
         //log
         console.log('Player ', this.lastHit+1, ' HOLDSHOT!');
       }else if(this.cursorX-10>this.game.input.x){
+        //Normal
+        //loadMove(1);
         this.type = 1;
         this.dir = 1;
         //On lance un son bruitages
@@ -310,6 +337,8 @@ Ball.prototype.hitTheBall = function(type, player) {
         //log
         console.log('Player ', this.lastHit+1, ' HOLDSHOT!');
       }else{
+        //DROPSHOT
+        //loadMove(2);
         this.type = 2;
         this.dir *= (-1);
         this.currSpd *= 0.5; //Teste
@@ -317,7 +346,7 @@ Ball.prototype.hitTheBall = function(type, player) {
         this.maxDelaySpd = this.delaySpd * 2.3; //Creer un facteur de multiplication
         //On lance un son bruitages
         if(oSounds){
-          this.sHit.play('sndDrop');
+          this.sDrop.play('sndDrop');
         }
         //log
         console.log('Player ', this.lastHit+1, ' DROPSHOT!');
@@ -333,6 +362,7 @@ Ball.prototype.hitTheBall = function(type, player) {
         this.yGutter = Math.abs(this.cursorY - this.game.input.y)/20;
         this.ySpd = this.yGutter * 1;
       }
+      //-------------------------------------------Fin du gros bordel
 
       //On change la couleur de la balle
       this.changeGem();
@@ -341,7 +371,6 @@ Ball.prototype.hitTheBall = function(type, player) {
       this.sHold.pause();
 
       this.currSpd += (this.power) + (this.combo/30);
-      if(this.power>=1.5){console.log('Puissance du hold: ',this.power);}
       this.playing = true;
 
       //Qui a touché la balle en dernier
@@ -379,14 +408,7 @@ Ball.prototype.tweenGlow = function(duration, toScale, toAlpha, toTint) {
   this.sprGlow.tint = colorV;
 }
 
-//Fonction qui ajoute du pouvoir aux balles chargés
-Ball.prototype.addPower = function() {
-  if(this.power<MAXPOWER){ //Attention !
-    this.power += HOLDPOWERADD;
-  }
-}
-
-//Changement de couleur
+//Changement de Gemme
 Ball.prototype.changeGem = function() {
   if(this.gem>0){
     this.gem=0;
@@ -422,6 +444,7 @@ Ball.prototype.goBall = function() {
     if(!this.dir){this.dir = -1;}
   this.playing = true;
   this.sprGlow.inputEnabled = true;
+    this.sprGlow.tint = green;
 
   txSpd.setText((Math.floor(this.currSpd)) + 'm/s');
   //On change la couleur de la balle
