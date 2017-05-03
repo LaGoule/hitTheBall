@@ -6,6 +6,7 @@ var match = function(game){
   matchEnd = false; //
 	bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
+
 	//Couleurs
 	red = '0xff0000';
 	yellow = '0xdd9933';
@@ -33,14 +34,13 @@ var match = function(game){
 	GMARGIN = 10;
 	BALLGLOWMAX = 0.52;
 	BALLGLOWMIN = 0.34;
+	BALLALPHAMAX = 0.5;
+	BALLALPHAMIN = 0.2;
 }
 
 //On créer l'état qui gère le match 1v1
 match.prototype = {
   preload: function() {
-		//Variables de positionnement
-		gwx = this.game.world.centerX; gwy = this.game.world.centerY;
-		gww = this.game.world.width; gwh = this.game.world.height;
 		//Musique
 		music = this.game.add.audio('mus_children');
 	    music.allowMultiple = false;

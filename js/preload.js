@@ -2,14 +2,27 @@ var preload = function(game){}
 
 preload.prototype = {
 	preload: function(){
-				//On affiche la barre de chargement pendant le preload
-	      var loadingBar = this.add.sprite(this.game.world.centerX,this.game.world.centerY,"loading");
-	      loadingBar.anchor.setTo(0.5,0.5);
-	      this.load.setPreloadSprite(loadingBar);
+		//On affiche la barre de chargement pendant le preload
+    var loadingBar = this.add.sprite(this.game.world.centerX,this.game.world.centerY,"loading");
+    loadingBar.anchor.setTo(0.5,0.5);
+    this.load.setPreloadSprite(loadingBar);
+
+		//On initialise les variables des paramêtres
+		oMusic = true;
+		oSounds = true;
+		oFx = true;
+		oFullscreen = false;
+
+		//Variables de positionnement
+		gwx = this.game.world.centerX;
+		gwy = this.game.world.centerY;
+		gww = this.game.world.width;
+		gwh = this.game.world.height;
+
 		//Assets de l'écran titre
 		this.game.load.image("gametitle","res/gametitle.png");
-		this.game.load.spritesheet("play","res/playsheet.png",610,180);
-		//this.game.load.image("play","res/play.png");
+		this.game.load.spritesheet("play","res/playsheet.png",610,180,6);
+		this.game.load.spritesheet("icons","res/icons.png",255,255,4);
 	  this.game.load.image('bg','res/flatbg.jpg');
 
 		//Assets du jeu
@@ -30,6 +43,7 @@ preload.prototype = {
 		console.log("2. All assets are preloaded.");
 	},
   	create: function(){
+		//On lance l'écran titre
 		this.game.state.start("GameTitle");
 	}
 }

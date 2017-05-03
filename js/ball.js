@@ -107,11 +107,11 @@ Ball.prototype.behaviour = function() {
           this.ySpdRectif(0.9);
         break;
         case 2: //Dropshot
-          this.sprGlow.tint = blue;
+          this.sprGlow.tint = red;
           this.dropMove();
         break;
         case 3: //Wallbounce
-          this.sprGlow.tint = green;
+          this.sprGlow.tint = blue;
           this.normalMove();
           this.ySpdRectif(1.4);
         break;
@@ -199,7 +199,6 @@ Ball.prototype.changeSide = function() {
 //Fonction slowTheBall
 Ball.prototype.slowTheBall = function() {
   if(workingButtons && this.type!=0){
-  //if(workingButtons && this.type!=0){
     if(this.x<=gwx && this.gem===1 || this.x>gwx && this.gem===2){
       this.type = 0;
       this.power = BASEPOWER
@@ -211,9 +210,8 @@ Ball.prototype.slowTheBall = function() {
       this.holdTimer.loop(HOLDLOOPMS, this.addPower, this);
       this.holdTimer.start();
 
-      //this.sprGlow.scale.setTo(BALLGLOWMAX,BALLGLOWMAX);
-      this.game.add.tween(this.sprGlow).to( { alpha: 0.6 }, 1000, Phaser.Easing.Linear.None, true);
       this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMIN, y:BALLGLOWMIN }, 500, Phaser.Easing.Linear.None, true);
+      this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMAX }, 1200, Phaser.Easing.Linear.None, true);
 
       //On calcule le lancer sur Y
       this.cursorX = this.game.input.x;
@@ -268,7 +266,6 @@ Ball.prototype.hitTheBall = function(type, player) {
         //log
         console.log('Player ', this.lastHit+1, ' DROPSHOT!');
       }
-
       //Teste pour le deplacement Y MOOOOOOOCHE
       //A inclure dans la futur fonction du haut
       if(this.cursorY<this.game.input.y-40){
@@ -291,12 +288,8 @@ Ball.prototype.hitTheBall = function(type, player) {
       if(this.power>=1.5){console.log('Puissance du hold: ',this.power);}
       this.playing = true;
 
-
-      //this.sprGlow.scale.setTo(BALLGLOWMIN,BALLGLOWMIN);
-
-      //this.sprGlow.scale.setTo(0.3,0.3);
-      this.game.add.tween(this.sprGlow).to( { alpha: 0.2 }, 400, Phaser.Easing.Linear.None, true);
       this.game.add.tween(this.sprGlow.scale).to( {x:BALLGLOWMAX, y:BALLGLOWMAX }, 400, Phaser.Easing.Linear.None, true);
+      this.game.add.tween(this.sprGlow).to( { alpha: BALLAPLHAMIN }, 400, Phaser.Easing.Linear.None, true);
 
       //Qui a touché la balle en dernier
       if(this.x<gwx){ //P1
@@ -381,32 +374,16 @@ Ball.prototype.reset = function() {
 
   this.sprGlow.inputEnabled = false;
   this.sprGlow.scale.setTo(BALLGLOWMAX);
-  this.sprGlow.alpha = 0.2;
+  this.sprGlow.alpha = BALLALPHAMAX;
+  this.sprGlow.tint = black;
+
+  this.sprClic.alpha = 0;
 
   this.game.add.tween(this.spr).to( { alpha: 1 }, 600, Phaser.Easing.Linear.None, true);
+  this.game.add.tween(this.sprGlow).to( { alpha: BALLALPHAMIN }, 700, Phaser.Easing.Linear.None, true);
 
   this.sGoal.pause();
 
   txCombo.setText(this.combo);
   txSpd.setText('0' + 'm/s');
-}
-
-//Classe de l'objet Player
-Player = function(id, game) {
-  this.level = 1;
-  this.exp = 0;
-  this.score = 0;
-
-  this.id = id;
-  this.game = game;
-
-  //Variables graphiques et inputs
-
-  //this.drawPoints = function(){
-
-  //}
-}
-
-//Update de la balle
-Player.prototype.update = function() {
 }

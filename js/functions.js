@@ -6,12 +6,26 @@ function initMatch(game){
   theBall = new Ball(game);
   theBall.reset();
   //On lance la musique
-  music.pause();
-  music.play('normal');
+  if(oMusic){
+    music.pause();
+    music.play('normal');
+  }
   //On le timer qui lance la balle
-  self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
+  //self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
+  newTimer(2,theBall.goBall,theBall);
   //On affiche un message de début de partie
   console.log('---> Bonne partie! | Round: ',matchRound);
+};
+
+//Fonction qui enclenche le prochain round
+function newRound(){
+  //On retire le marqueur de goal
+  goalZone.alpha = 0;
+  //On reset la ball
+  theBall.reset();
+  //On lance le timer qui lance la balle
+  //self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
+  newTimer(2,theBall.goBall,theBall);
 };
 
 //Fonction de fin d'un round (goal)
@@ -46,6 +60,8 @@ function endRound(game, winn){
   console.log('Gagnant du round: Joueur ', winner+1);
   console.log('Fin du round, score: ',p[0].score,'-',p[1].score);
 
+  txPScore[winner].setText(p[winner].score);
+
   //2. On montre de niveau les joueurs?
 
   //3. Est-ce que la partie est fini?
@@ -63,30 +79,11 @@ function endRound(game, winn){
   //4. On lance un nouveau round ou on arrête le match
   if(!matchEnd){
     //Nouveau round
-    self.game.time.events.add(Phaser.Timer.SECOND * 2, newRound, this);
+    newTimer(2,newRound,this);
   }else{
-    //Affichage du score
-    if(bestPlayer){
-      var winX = gww-170;
-    }else{
-      var winX = 32;
-    }
-    self.game.time.events.add(Phaser.Timer.SECOND * 3, goTitle, this);
-    //Faire un affichage des score ici!!!!!
-    //self.game.debug.text("GAGNANT: J" + (bestPlayer+1) + '!',winX,gwy);
-    //self.game.time.events.add(Phaser.Timer.SECOND * 4, goTitle, this);
+    //Ecran titre
+    newTimer(4,goTitle,this);
   }
-};
-
-//Fonction qui enclenche le prochain round
-function newRound(){
-  //On retire le marqueur de goal
-  goalZone.alpha = 0;
-  //On reset la ball
-  theBall.reset();
-  //On le timer qui lance la balle
-  self.game.time.events.add(Phaser.Timer.SECOND * 2, theBall.goBall, theBall);
-  //theBall.goBall();
 };
 
 //Fonction qui retourne le joueur en tête
@@ -127,7 +124,7 @@ function resetMatch(){
   p = []; //Objet qui contient les deux joueurs
   workingButtons = true; //Pour la pause etc...
   matchRound = undefined; //Contient le numero du round
-  matchEnd = false; //
+  matchEnd = false;
   bestPlayer = undefined; //Contient le joueur dont le score est le plus haut
   bestCombo = 0;
 }
@@ -137,8 +134,8 @@ function drawBoard(parent){
   let stroke = 10;
 
   //Styles
-  var stSimple = { font: "80px Arial", fill: black, align: "center" };
-  var stSmall = { font: "40px Arial", fill: black, align: "center" };
+  var stSimple = { font: "80px Arial", fill: purple, align: "center" };
+  var stSmall = { font: "40px Arial", fill: purple, align: "center" };
 
   var board = self.game.add.group()
 
@@ -158,9 +155,18 @@ function drawBoard(parent){
 
   txCombo = game.add.text(gwx,40,'0',stSmall);
     txCombo.anchor.setTo(0.5);
-    txCombo.alpha = 1;
+    txCombo.alpha = 0.5;
 
   txSpd = game.add.text(gwx,gwh-30,'0m/s',stSmall);
     txSpd.anchor.setTo(0.5);
-    txSpd.alpha = 1;
+    txSpd.alpha = 0.5;
+
+  txPScore = [];
+  txPScore[0] = game.add.text(gwx-50,GMARGIN * 1.1,'0',stSimple);
+    txPScore[0].anchor.setTo(1,0);
+    txPScore[0].alpha = 0.6;
+
+  txPScore[1] = game.add.text(gwx+50,GMARGIN * 1.1,'0',stSimple);
+    txPScore[1].anchor.setTo(0,0);
+    txPScore[1].alpha = 0.6;
 }
